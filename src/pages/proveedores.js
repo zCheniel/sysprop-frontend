@@ -57,16 +57,16 @@ function Dashboard() {
       </div>
 
       <div className="row m-4">
-        <h3 className="mb-3">Clientes Registrados</h3>
+        <h3 className="mb-3">Proovedores Registrados</h3>
         <table id="tabla-clientes" className="table">
           <thead>
             <tr>
               <th>ID</th>
+              <th>RIF</th>
               <th>Nombre</th>
-              <th>Apellido</th>
-              <th>Cédula</th>
-              <th>Teléfono</th>
+              <th>Telefono</th>
               <th>Dirección</th>
+              <th>Correo</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -106,29 +106,29 @@ function Dashboard() {
                   />
                 </div>
                 <div className="col-md-6">
-                  <label for="apellido" className="form-label">Apellido:</label>
+                  <label for="rif" className="form-label">RIF:</label>
                   <input
                     type="text"
                     className="form-control"
-                    id="apellido"
+                    id="rif"
                     required
                   />
                 </div>
                 <div className="col-md-6">
-                  <label for="cedula" className="form-label">Cédula:</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="cedula"
-                    required
-                  />
-                </div>
-                <div className="col-md-6">
-                  <label for="telefono" className="form-label">Teléfono:</label>
+                  <label for="telefonno" className="form-label">Telefono:</label>
                   <input
                     type="text"
                     className="form-control"
                     id="telefono"
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label for="correo" className="form-label">Correo:</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="correo"
                     required
                   />
                 </div>

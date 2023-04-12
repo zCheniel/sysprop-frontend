@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 const SideBar = () => {
-	const [isExpanded, setExpendState] = useState(true);
+	const [isExpanded, setExpendState] = useState(false);
 	const menuItems = [
 		{
 			text: "Inicio",
