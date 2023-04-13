@@ -5,7 +5,7 @@ import { DataFetching } from "../DataFetching";
 import "../assets/styles.scss";
 
 async function agregarUsuario(ruta, nombre, cedula, fechaNacimiento, correo, username, password, cargo) {
-  if (!nombre || !cedula || !fechaNacimiento || !correo || !username || !password) {
+  if (!nombre || !cedula || !correo || !username || !password) {
     alert("Todos los campos son obligatorios");
     return;
   }
@@ -17,20 +17,13 @@ async function agregarUsuario(ruta, nombre, cedula, fechaNacimiento, correo, use
     alert("Nombre Invalido");
     return;
   }
-  if (fechaNacimiento.length <= 10 || fechaNacimiento.length >= 12) {
-    alert("Telefono Invalida");
-    return;
-  }
-  if (correo.length <= 10 || correo.length >= 12) {
-    alert("Telefono Invalida");
-    return;
-  }
+ 
   if (username.length <= 10 || username.length >= 12) {
-    alert("Telefono Invalida");
+    alert("Username Invalido");
     return;
   }
   if (password.length <= 10 || password.length >= 12) {
-    alert("Telefono Invalida");
+    alert("Password Invalido");
     return;
   }
   const clientes = await axios.get(ruta);
@@ -41,9 +34,9 @@ async function agregarUsuario(ruta, nombre, cedula, fechaNacimiento, correo, use
     alert("Esta cedula ya se encuentra registrada.");
     return;
   }
-  const username = await axios.get(ruta);
+  const user = await axios.get(ruta);
   const usernameExistente = clientes.data.filter(
-    (username) => cliente.username === username
+    (user) => clientes.user === username
   );
   if (usernameExistente.length > 0) {
     alert("Esta nombre de usuario ya esta registrado.");
@@ -51,13 +44,13 @@ async function agregarUsuario(ruta, nombre, cedula, fechaNacimiento, correo, use
   }
   await axios
     .post(ruta, {
-      nombre: nombre,
-      cedula: cedula,
-      fechaNacimiento: fechaNacimiento,
-      correo: correo,
-      username : username,
-      password : password,
-      cargo : cargo
+      nombre,
+      cedula,
+      fechaNacimiento,
+      correo,
+      username,
+      password,
+      cargo
     })
     .then((res) => console.log("posting data", res))
     .catch((err) => console.log(err));
@@ -65,7 +58,7 @@ async function agregarUsuario(ruta, nombre, cedula, fechaNacimiento, correo, use
   window.location.reload();
 }
 
-const eliminarUsuario= async (id) => {
+const eliminarUsuario = async (id) => {
   if (window.confirm("¿Está seguro de que desea eliminar este usuario?")) {
     try {
       await axios.delete(
@@ -79,8 +72,8 @@ const eliminarUsuario= async (id) => {
   window.location.reload();
 };
 
-const editarCliente = async (id, nombre, cedula, telefono, direccion) => {
-  if (!nombre || !cedula || !telefono || !direccion) {
+const editarCliente = async (id, nombre, cedula, fechaNacimiento, correo, username, password, cargo) => {
+  if (!nombre || !cedula) {
     alert("Todos los campos son obligatorios");
     return;
   }
@@ -92,21 +85,17 @@ const editarCliente = async (id, nombre, cedula, telefono, direccion) => {
     alert("Nombre Invalido");
     return;
   }
-  if (telefono.length <= 10 || telefono.length >= 12) {
-    alert("Telefono Invalida");
-    return;
-  }
   try {
     await axios.put(
       `https://sysprop-production.up.railway.app/usuarios/${id}`,
       {
-      nombre: nombre,
-      cedula: cedula,
-      fechaNacimiento: fechaNacimiento,
-      correo: correo,
-      username : username,
-      password : password,
-      cargo : cargo
+        nombre: nombre,
+        cedula: cedula,
+        fechaNacimiento: fechaNacimiento,
+        correo: correo,
+        username: username,
+        password: password,
+        cargo: cargo,
       }
     );
   } catch (error) {
@@ -122,12 +111,16 @@ function Usuarios() {
   const itemCliente = DataFetching(
     "https://sysprop-production.up.railway.app/usuarios"
   );
+
   const [show, setShow] = useState(false);
 
   const [nombre, setNombre] = useState("");
   const [cedula, setCedula] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [direccion, setDireccion] = useState("");
+  const [fechaNacimiento, setFechanacimiento] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [cargo, setCargo] = useState([]);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -149,10 +142,15 @@ function Usuarios() {
     editClienteId = itemCliente[id].id;
     clienteIndex = id;
 
-    setNombre(itemCliente[clienteIndex].nombre);
-    setCedula(itemCliente[clienteIndex].cedula);
-    setTelefono(itemCliente[clienteIndex].telefono);
-    setDireccion(itemCliente[clienteIndex].direccion);
+      setNombre(itemCliente[clienteIndex].nombre);
+      setCedula(itemCliente[clienteIndex].cedula);
+      setFechanacimiento(itemCliente[clienteIndex].fechaNacimiento);
+      setCorreo(itemCliente[clienteIndex].correo);
+      setUsername(itemCliente[clienteIndex].username);
+      setPassword(itemCliente[clienteIndex].password);
+      setCargo(itemCliente[clienteIndex].cargo.nombre);
+    
+    
 
     handleEditar();
     handleShow();
@@ -178,10 +176,16 @@ function Usuarios() {
       column: "Cédula",
     },
     {
-      column: "Teléfono",
+      column: "Correo",
     },
     {
-      column: "Dirección",
+      column: "Fecha Nacimiento",
+    },
+    {
+      column: "Username",
+    },
+    {
+      column: "Cargo",
     },
     {
       column: "Acciones",
@@ -216,43 +220,20 @@ function Usuarios() {
   /******************************************/
   /*************VALIDAR TELEFONO*******************/
 
-  const validarTelefono = (event) => {
-    const { value } = event.target;
-    const regex = /^[0-9]*$/;
-    if (regex.test(value) && value.length <= 11) {
-      setTelefono(value);
-    } else if (!value) {
-      setTelefono("");
-    }
-  };
-
-  /******************************************/
-
-  /*************VALIDAR DIRECCION**********/
-  const ValidarDireccion = (event) => {
-    const { value } = event.target;
-    const regex = /^[a-zñA-ZÑ,.0-9()-\s]*$/;
-    if (regex.test(value) && value.length <= 120) {
-      setDireccion(value);
-    } else if (!value) {
-      setDireccion("");
-    }
-  };
-  /******************************************/
 
   return (
     <div>
       {/* <!--CUERPO--> */}
       <div id="cuerpo">
         <div className="row p-4">
-          <h3>Buscar Cliente</h3>
+          <h3>Buscar Usuario</h3>
           <div className="col-6">
             <input
               type="text"
               className="form-control"
               value={searchQuery}
               onChange={handleSearch}
-              placeholder="Buscar Cliente..."
+              placeholder="Buscar Usuario..."
             />
           </div>
           <div className="col-3"></div>
@@ -264,12 +245,12 @@ function Usuarios() {
             data-bs-target="#mi-modal"
             onClick={agregarClick}
           >
-            Agregar Cliente
+            Agregar Usuario
           </button>
         </div>
 
         <div className="row m-4">
-          <h3 className="mb-3">Clientes Registrados</h3>
+          <h3 className="mb-3">Usuarios</h3>
           <table id="tabla-clientes" className="table">
             <thead>
               <tr>
@@ -290,8 +271,10 @@ function Usuarios() {
                   </td>
                   <td>{itemCliente.nombre}</td>
                   <td>{itemCliente.cedula}</td>
-                  <td>{itemCliente.telefono}</td>
-                  <td>{itemCliente.direccion}</td>
+                  <td>{itemCliente.correo}</td>
+                  <td>{itemCliente.fechaNacimiento}</td>
+                  <td>{itemCliente.username}</td>
+                  <td>{itemCliente.cargo.nombre}</td>
                   <td>
                     <button
                       className="btn btn-warning"
@@ -321,7 +304,7 @@ function Usuarios() {
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>
-            {action === 1 ? "Agregar cliente" : "Modificar cliente"}
+            {action === 1 ? "Agregar  Usuario" : "Modificar Usuario"}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -362,83 +345,141 @@ function Usuarios() {
                 />
               </div>
               <div className="col-md-6">
-                <label for="telefono" className="form-label">
-                  Teléfono:
+                <label for="correo" className="form-label">
+                  Correo:
                 </label>
                 <input
                   type="text"
                   className="form-control"
-                  id="telefono"
-                  defaultValue={action === 1 ? "" : telefono}
-                  value={telefono}
-                  //onChange={(event) => setTelefono(event.target.value)}
-                  onChange={validarTelefono}
-                  required
+                  id="correo"
+                  defaultValue={action === 1 ? "" : correo}
+                  value={correo}
+                onChange={(event) => setCorreo(event.target.value)}
+                // onChange={validarTelefono}
+                
                 />
               </div>
               <div className="col-md-12">
-                <label for="direccion" className="form-label">
-                  Dirección:
+                <label for="fechaNacimiento" className="form-label">
+                  Fecha de nacimiento:
                 </label>
-                <textarea
+                <input
+                  type="date"
                   className="form-control"
-                  id="direccion"
-                  defaultValue={action === 1 ? "" : direccion}
-                  value={direccion}
-                  //onChange={(event) => setDireccion(event.target.value)}
-                  onChange={ValidarDireccion}
-                  required
-                ></textarea>
+                  id="fechaNacimiento"
+                  defaultValue={action === 1 ? "" : fechaNacimiento}
+                  value={fechaNacimiento}
+                  onChange={(event) => setFechanacimiento(event.target.value)}
+                // onChange={ValidarDireccion}
+                // required
+                ></input>
               </div>
-            </div>
-            {/* <!--<button type="submit" className="btn btn-primary mt-3">Agregar</button>--> */}
-            {action === 1 ? (
-              <button
-                id="agregar"
-                type="button"
-                onClick={() =>
-                  agregarUsuario(
-                    "https://sysprop-production.up.railway.app/clientes",
-                    nombre,
-                    cedula,
-                    telefono,
-                    direccion
-                  )
-                }
-                className="btn btn-primary"
-              >
-                Agregar
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-success"
-                onClick={() => {
-                  editarCliente(
-                    editClienteId,
-                    nombre,
-                    cedula,
-                    telefono,
-                    direccion
-                  );
-                }}
-              >
-                Guardar cambios
-              </button>
-            )}
-          </form>
-          <button
-            id="cerrar"
-            type="button"
-            className="btn btn-secondary"
-            data-bs-dismiss="modal"
-            onClick={handleClose}
-          >
-            Cerrar
-          </button>
-        </Modal.Body>
-      </Modal>
-    </div>
+              <div className="col-md-12">
+                <label for="Username" className="form-label">
+                  Usuario:
+                </label>
+                <input
+                type="text"
+                  className="form-control"
+                  id="username"
+                  defaultValue={action === 1 ? "" : username}
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                // onChange={ValidarDireccion}
+                // required
+                ></input>
+                <div className="col-md-12">
+                  <label for="Password" className="form-label">
+                    Password:
+                  </label>
+                  <input
+                    className="form-control"
+                    id="Password"
+                    defaultValue={action === 1 ? "" : password}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                  //onChange={ValidarDireccion}
+                    required
+                  ></input>
+                </div>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  id="Empleado"
+                  value="Empleado"
+                  checked={cargo === 'Empleado'}
+                  onChange={event => setCargo(event.target.value)}
+                  name="botonxd"
+                />
+                <label>Empleado</label>
+              </div>
+              <div>
+                <input
+                  type="radio"
+                  id="Admin"
+                  name="botonxd"
+                  value="Administrador"
+                  checked={cargo === 'Administrador'}
+                  onChange={event => setCargo(event.target.value)}
+                ></input>
+                <label>Admin</label>
+              </div> 
+              </div>
+          {/* Operación Ternaria para definir el botón de Acción del Modal (Agregar o Modificar) */}
+          {action === 1 ? (
+            <button
+              id="agregar"
+              type="button"
+              onClick={() =>
+                agregarUsuario(
+                  "https://sysprop-production.up.railway.app/usuarios",
+                  nombre,
+                  cedula,
+                  fechaNacimiento,
+                  correo,
+                  username,
+                  password,
+                  cargo.nombre
+                )
+              }
+              className="btn btn-primary"
+            >
+              Agregar
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={() => {
+                editarCliente(
+                  editClienteId,
+                  nombre,
+                  cedula,
+                  fechaNacimiento,
+                  correo,
+                  username,
+                  password,
+                  cargo.nombre,
+                );
+              }}
+            >
+              Guardar cambios
+            </button>
+          )}
+        </form>
+        <button
+          id="cerrar"
+          type="button"
+          className="btn btn-secondary"
+          data-bs-dismiss="modal"
+          onClick={handleClose}
+        >
+          Cerrar
+        </button>
+      </Modal.Body>
+    </Modal>
+    </div >
   );
 }
 
